@@ -318,7 +318,38 @@ int main(int argc, const char * argv[]) {
 
 经过上述代码改进后，Supscript可以萃取到任意指定位置的类型。
 
-### 反转Tuple的类型列表
+## 5、翻转Tuple的类型列表
 
-有了上述的Supscript，我们可以轻松在编译阶段萃取到任意位置的类型，借助这个方法可以轻松实现Tuple类型反转。
+借助上面PushBackC这个方法可以轻松实现Tuple类型反转。
+
+```
+template <int idx, typename ...T>
+struct Reverse;
+
+template <int idx,typename H, typename ...T>
+struct Reverse<idx,Tuple<H,T...>>{
+    using type =  typename PushBackC<H,typename Reverse<idx-1,Tuple<T...>>::type>::type;
+};
+
+template <typename H, typename ...T>
+struct Reverse<0,Tuple<H,T...>>{
+    using type = Tuple<H>;
+};
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a;
+    Tuple<short,double> av;
+    Tuple<char> ab;
+    
+    Reverse<0, decltype(a)>::type xfdas0;/// Tuple<char> xfdas0;
+    Reverse<1, decltype(a)>::type xfdas1;/// Tuple<short,char> xfdas1;
+    Reverse<2, decltype(a)>::type xfdas2;/// Tuple<double,short,char> xfdas2;
+    Reverse<3, decltype(a)>::type xfdas3;/// Tuple<bool,double,short,char> xfdas3;
+    Reverse<0, decltype(av)>::type xfdas4;/// Tuple<char> xfdas4;
+    Reverse<1, decltype(av)>::type xfdas5;/// Tuple<short,char> xfdas5;
+    
+     return 0;
+}
+```
 

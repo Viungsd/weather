@@ -328,7 +328,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-经过上述代码改进后，Supscript可以萃取到任意指定位置的类型。
+经过上述代码改进后，Supscript依然可以萃取到任意指定位置的类型。
 
 ## 5、翻转Tuple的类型列表
 

@@ -237,9 +237,9 @@ int main(int argc, const char * argv[]) {
 
 发现类模板也无法萃取出Tuple的最后一个类型，或者移除最后一个类型。因为Tuple<Head...,Trail>这样的类型，无法被偏特化。
 
-### 萃取Tuple的最后一个类型
+### 萃取Tuple的指定位置的类型
 
-本来准备写一个可以萃取Tuple任意位置类型的方法，结果失败了，阴错阳差，这个“错误”刚好而且只能能把Tuple的最后一个类型萃取出来。
+本来准备写一个可以萃取Tuple任意位置类型的方法，结果失败了，阴错阳差，这个“错误”刚好而且“只能”能把Tuple的最后一个类型萃取出来。
 
 ```
 template <int idx, typename ...T>
@@ -277,4 +277,48 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 ```
+
+分析，上述代码中的Supscript，只能萃取到最后一个元素，萃取其他指定位置会报错，我们还得修改一下，使得它最好能萃取到任意指定位置。修改后如下：
+
+```
+template <int idx, typename ...T>
+struct Supscript;
+
+template <int idx,typename H, typename ...T>
+struct Supscript<idx,Tuple<H,T...>>{
+    using type = typename  Supscript<idx-1,Tuple<T...>>::type;
+};
+
+template <typename H, typename ...T>
+struct Supscript<0,Tuple<H,T...>>{
+    using type = H;
+};
+
+///为何不能这样使用？如下方式只能萃取到第一个元素
+///template <int idx, typename ...T>
+///using supscript_t = typename Supscript<idx, Tuple<T...>>::type;
+
+///test
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a;
+    Tuple<short,double> av;
+    Tuple<char> ab;
+    
+    Supscript<0, decltype(a)>::type xxx0;/// char xxx0;
+    Supscript<1, decltype(a)>::type xxx1;/// short xxx1;
+    Supscript<2, decltype(a)>::type xxx2;/// double xxx2;
+    Supscript<3, decltype(a)>::type xxx3;///bool xxx3;
+    Supscript<0, decltype(av)>::type xxx4;///short xxx4
+    Supscript<1, decltype(av)>::type xxx5;///double xxx5;
+    Supscript<0, decltype(ab)>::type xxx6;/// char xxx6;
+    
+     return 0;
+}
+```
+
+经过上述代码改进后，Supscript可以萃取到任意指定位置的类型。
+
+### 反转Tuple的类型列表
+
+有了上述的Supscript，我们可以轻松在编译阶段萃取到任意位置的类型，借助这个方法可以轻松实现Tuple类型反转。
 

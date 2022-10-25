@@ -1,6 +1,6 @@
 # C++ Tuple元组实现 Metaprogramming
 
-核心原理：递归、偏特化
+核心玩法：模板递归、偏特化
 
     template<typename ... Tn>struct Tuple;
     
@@ -259,6 +259,10 @@ struct Supscript<0,Tuple<T>>{
     using type = T;
 };
 
+///为何不能这样写？
+///template <typename ...T>
+///using last_t = typename Supscript<sizeof...(T)-1, T...>::type;
+
 template<typename ...T>struct LastType;
 
 template<typename ...T>
@@ -295,9 +299,8 @@ struct Supscript<0,Tuple<H,T...>>{
     using type = H;
 };
 
-///为何不能这样使用？如下方式只能萃取到第一个元素
-///template <int idx, typename ...T>
-///using supscript_t = typename Supscript<idx, Tuple<T...>>::type;
+template <int idx, typename ...T>
+using supscript_t = typename Supscript<idx,T...>::type;
 
 ///test
 int main(int argc, const char * argv[]) {
@@ -305,13 +308,14 @@ int main(int argc, const char * argv[]) {
     Tuple<short,double> av;
     Tuple<char> ab;
     
-    Supscript<0, decltype(a)>::type xxx0;/// char xxx0;
-    Supscript<1, decltype(a)>::type xxx1;/// short xxx1;
-    Supscript<2, decltype(a)>::type xxx2;/// double xxx2;
-    Supscript<3, decltype(a)>::type xxx3;///bool xxx3;
-    Supscript<0, decltype(av)>::type xxx4;///short xxx4
-    Supscript<1, decltype(av)>::type xxx5;///double xxx5;
-    Supscript<0, decltype(ab)>::type xxx6;/// char xxx6;
+    supscript_t<0, decltype(a)> xxx0;/// char xxx0;
+    supscript_t<1, decltype(a)> xxx1;/// short xxx1;
+    supscript_t<2, decltype(a)> xxx2;/// double xxx2;
+    supscript_t<3, decltype(a)> xxx3;///bool xxx3;
+    supscript_t<0, decltype(av)> xxx4;///short xxx4
+    supscript_t<1, decltype(av)> xxx5;///double xxx5;
+    supscript_t<0, decltype(ab)> xxx6;/// char xxx6;
+    supscript_t<1, decltype(ab)> xxx7;/// Error
     
      return 0;
 }
@@ -337,18 +341,20 @@ struct Reverse<0,Tuple<H,T...>>{
     using type = Tuple<H>;
 };
 
+template <int idx, typename ...T>
+using reverse_t = typename Reverse<idx, T...>::type;
 
 int main(int argc, const char * argv[]) {
     Tuple<char,short,double,bool> a;
     Tuple<short,double> av;
     Tuple<char> ab;
     
-    Reverse<0, decltype(a)>::type xfdas0;/// Tuple<char> xfdas0;
-    Reverse<1, decltype(a)>::type xfdas1;/// Tuple<short,char> xfdas1;
-    Reverse<2, decltype(a)>::type xfdas2;/// Tuple<double,short,char> xfdas2;
-    Reverse<3, decltype(a)>::type xfdas3;/// Tuple<bool,double,short,char> xfdas3;
-    Reverse<0, decltype(av)>::type xfdas4;/// Tuple<char> xfdas4;
-    Reverse<1, decltype(av)>::type xfdas5;/// Tuple<short,char> xfdas5;
+    reverse_t<0, decltype(a)> xfdas0;/// Tuple<char> xfdas0;
+    reverse_t<1, decltype(a)> xfdas1;/// Tuple<short,char> xfdas1;
+    reverse_t<2, decltype(a)> xfdas2;/// Tuple<double,short,char> xfdas2;
+    reverse_t<3, decltype(a)> xfdas3;/// Tuple<bool,double,short,char> xfdas3;
+    reverse_t<0, decltype(av)> xfdas4;/// Tuple<short> xfdas4;
+    reverse_t<1, decltype(av)> xfdas5;/// Tuple<double,short> xfdas5;
     
      return 0;
 }
@@ -376,14 +382,17 @@ public:
     using type = decltype(PushBackT(T(),T1()));
 };
 
+template<typename T,typename ...T1>
+using merge_t = typename Merge<T, T1...>::type;
+
 int main(int argc, const char * argv[]) {
     Tuple<char,short,double,bool> a;
     Tuple<short,double> av;
     Tuple<char> ab;
     
-    Merge<decltype(ab), decltype(av)>::type x11;///Tuple<char,short,double> x11;
-    Merge<decltype(av), decltype(av)>::type x12;/// Tuple<short,double,short,double> x12;
-    Merge<decltype(av), decltype(ab)>::type x13;/// Tuple<short,double,char> x13;
+    merge_t<decltype(ab), decltype(av)> x11;///Tuple<char,short,double> x11;
+    merge_t<decltype(av), decltype(av)> x12;/// Tuple<short,double,short,double> x12;
+    merge_t<decltype(av), decltype(ab)> x13;/// Tuple<short,double,char> x13;
     
      return 0;
 }

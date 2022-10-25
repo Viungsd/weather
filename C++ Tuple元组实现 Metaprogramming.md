@@ -1,5 +1,7 @@
 # C++ Tuple元组实现 Metaprogramming
 
+核心原理：递归、偏特化
+
     template<typename ... Tn>struct Tuple;
     
     template<typename T0,typename ... Tn>
@@ -348,6 +350,41 @@ int main(int argc, const char * argv[]) {
     Reverse<3, decltype(a)>::type xfdas3;/// Tuple<bool,double,short,char> xfdas3;
     Reverse<0, decltype(av)>::type xfdas4;/// Tuple<char> xfdas4;
     Reverse<1, decltype(av)>::type xfdas5;/// Tuple<short,char> xfdas5;
+    
+     return 0;
+}
+```
+
+## 6、两个Tuple合并
+
+可以想办法使得两个Tuple合并成一个：
+
+```
+template<typename T,typename ...T1> struct Merge;
+
+template<typename T,typename T1,typename ...T2>
+struct Merge<T,Tuple<T1,T2...>>{
+private:
+    using Head = decltype(PushBackT(T(),T1()));
+    using Trail = Tuple<T2...>;
+public:
+    using type = typename Merge<Head,Trail>::type;
+};
+
+template<typename T,typename T1>
+struct Merge<T,Tuple<T1>>{
+public:
+    using type = decltype(PushBackT(T(),T1()));
+};
+
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a;
+    Tuple<short,double> av;
+    Tuple<char> ab;
+    
+    Merge<decltype(ab), decltype(av)>::type x11;///Tuple<char,short,double> x11;
+    Merge<decltype(av), decltype(av)>::type x12;/// Tuple<short,double,short,double> x12;
+    Merge<decltype(av), decltype(ab)>::type x13;/// Tuple<short,double,char> x13;
     
      return 0;
 }

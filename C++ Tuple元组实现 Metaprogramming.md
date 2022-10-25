@@ -240,7 +240,7 @@ int main(int argc, const char * argv[]) {
 
 ### 萃取Tuple的指定位置的类型
 
-本来准备写一个可以萃取Tuple任意位置类型的方法，结果失败了，阴错阳差，这个“错误”刚好而且“只能”能把Tuple的最后一个类型萃取出来。
+通过Supscript可以萃取指定位置的类型，代码如下：
 
 ```
 template <int idx, typename ...T>
@@ -254,9 +254,9 @@ public:
     using type = std::conditional_t<idx==0, H,last>;
 };
 
-template <typename T>
-struct Supscript<0,Tuple<T>>{
-    using type = T;
+template <typename H,typename ...T>
+struct Supscript<0,Tuple<H,T...>>{
+    using type = H;
 };
 
 ///为何不能这样写？
@@ -275,6 +275,13 @@ int main(int argc, const char * argv[]) {
     Tuple<short,double> av;
     Tuple<char> ab;
     
+    Supscript<0, decltype(a)>::type xx4;
+    Supscript<1, decltype(a)>::type xx43;
+    Supscript<2, decltype(a)>::type x4x4;
+    Supscript<3, decltype(a)>::type xx554;
+    Supscript<0, decltype(av)>::type xx444;
+    Supscript<1, decltype(av)>::type xx334;
+    
     LastType<decltype(a)>::type xaa2a;///bool xaa2a;
     LastType<decltype(av)>::type xaa3a;///double xaa3a;
     LastType<decltype(ab)>::type xa4aa;///char xa4aa;
@@ -283,7 +290,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-分析，上述代码中的Supscript，只能萃取到最后一个元素，萃取其他指定位置会报错，我们还得修改一下，使得它最好能萃取到任意指定位置。修改后如下：
+上述代码，也可以用另外一种写法实现【好像换汤不换药，逻辑是一样的】，修改后如下：
 
 ```
 template <int idx, typename ...T>

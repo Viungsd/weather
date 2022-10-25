@@ -5,9 +5,9 @@
     template<typename ... Tn>struct Tuple;
     
     template<typename T0,typename ... Tn>
-    struct Tuple<T0,Tn...>{///特化
+    struct Tuple<T0,Tn...>{
         T0 head;
-        Tuple<Tn...>tail;///递归调用
+        Tuple<Tn...>tail;
         constexpr static int size = sizeof...(Tn)+1;
         Tuple():head(0){
         }
@@ -20,7 +20,6 @@
        
         template<typename _T0,typename ... _Tn,typename =std::enable_if_t<sizeof...(Tn)==sizeof...(_Tn)>>
         Tuple( _T0&& a, _Tn && ...  n):head(std::forward<_T0>(a)),tail(std::forward<_Tn>(n)...){
-          
         }
     };
     
@@ -357,7 +356,7 @@ int main(int argc, const char * argv[]) {
 
 ## 6、两个Tuple合并
 
-可以想办法使得两个Tuple合并成一个：
+可以想办法把两个Tuple内部的类型合并成到一个Tuple中：
 
 ```
 template<typename T,typename ...T1> struct Merge;

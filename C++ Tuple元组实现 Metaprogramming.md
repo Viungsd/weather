@@ -330,7 +330,46 @@ int main(int argc, const char * argv[]) {
 
 经过上述代码改进后，Supscript依然可以萃取到任意指定位置的类型。
 
-## 5、翻转Tuple的类型列表
+## 5、移除Tuple的指定位置的类型
+
+借助上面PushFrontC这个方法可以轻松删掉Tuple指定位置的类型
+
+```
+template<int idx,typename ...T2>struct RemoveAt;
+
+template<int idx,typename H,typename ...T2>
+struct RemoveAt<idx,Tuple<H,T2...>>{
+    using type = typename PushFrontC<H,typename RemoveAt<idx-1,Tuple<T2...>>::type>::type;
+};
+
+template<typename H,typename ...T2>
+struct RemoveAt<0,Tuple<H,T2...>>{
+    using type = Tuple<T2...>;
+};
+
+template<int idx,typename T1,typename ...T2>
+using remove_at_t = typename RemoveAt<idx,T1,T2...>::type;
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a ('a',34,6.8,true);
+    Tuple<short,double> av(90,88.9);
+    Tuple<char> ab;
+    
+    remove_at_t<0, decltype(a)> xxx1; ///Tuple<short,double,bool> xxx1;
+    remove_at_t<1, decltype(a)> xxx12;///Tuple<char,double,bool> xxx12;
+    remove_at_t<2, decltype(a)> xxx21;///Tuple<char,short,bool> xxx21;
+    remove_at_t<3, decltype(a)> xx3x21;///Tuple<char,short,double> xx3x21;
+    
+     return 0;
+}
+```
+
+
+
+
+
+## 6、翻转Tuple的类型列表
 
 借助上面PushBackC这个方法可以轻松实现Tuple类型反转。
 
@@ -366,7 +405,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 6、两个Tuple合并
+## 7、两个Tuple合并
 
 可以想办法把两个Tuple内部的类型合并成到一个Tuple中：
 
@@ -404,7 +443,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 7、判断两个Tuple的类型列表中是否有相同的类型
+## 8、判断两个Tuple的类型列表中是否有相同的类型
 
 利用上面的Search方法可以判断Tuple中是否包含特定类型，因而我们可以再进一步判断两个Tuple是否有相同的类型，有则返回true，否则返回false，代码参考如下：
 

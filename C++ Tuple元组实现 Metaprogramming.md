@@ -439,8 +439,6 @@ int main(int argc, const char * argv[]) {
 
 
 
-
-
 # Tuple对象的变换
 
 如果说刚才都是Tuple类型列表变换，那我们要讨论一下对象如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象？增加一个类型？删除一个类型？或者翻转类型？

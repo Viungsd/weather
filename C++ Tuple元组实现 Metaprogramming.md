@@ -409,15 +409,15 @@ int main(int argc, const char * argv[]) {
 
 # Tuple对象的变换
 
-如果说刚才都是Tuple类型的变换，那我们要讨论一下对象如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象？
+如果说刚才都是Tuple类型列表变换，那我们要讨论一下对象如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象？增加一个类型？删除一个类型？或者翻转类型？
 
 #### 问题1:如何获取Tuple对象指定位置的元素值？
 
 ```
 template<int idx,typename ...T>
-auto getTuple(const Tuple<T...>& tuple){
-    if constexpr (0 == idx) {///利用constexpr的编译时特性 C++17
-        return tuple.head;
+auto& getTuple(Tuple<T...>& tuple){///确保参数只接受左值，函数返回左值，所以可以同时支持读、写
+    if constexpr (0 == idx) {///利用了constexpr编译时特性，Since C++17，否则就只能使用模板递归实现了
+        return  tuple.head;
     }else{
         return getTuple<idx-1>(tuple.tail);
     }
@@ -429,8 +429,10 @@ int main(int argc, const char * argv[]) {
     Tuple<short,double> av(90,88.9);
     Tuple<char> ab;
     
- 
-    auto xxx0 =  getTuple<0>(a);///'a'
+    auto xxx0 =  getTuple<0>(a);///copy -> 'a'
+    auto &xxx = getTuple<0>(a);///lvalue reference
+    xxx = '9';
+    getTuple<3>(a) = false;
     auto xxx1 =  getTuple<1>(a);///34
     auto xxx2 =  getTuple<2>(a);///6.8
     auto xxx3 =  getTuple<3>(a);///true

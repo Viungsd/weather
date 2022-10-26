@@ -405,6 +405,40 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+## 7、判断两个Tuple的类型列表中是否有相同的类型
+
+利用上面的Search方法可以判断Tuple中是否包含特定类型，因而我们可以再进一步判断两个Tuple是否有相同的类型，有则返回true，否则返回false，代码参考如下：
+
+```
+template<typename T1,typename ...T2>struct ContainSame;
+
+template<typename T1,typename Tn1,typename ...Tn2>
+struct ContainSame<T1,Tuple<Tn1,Tn2...>> : std::conditional_t<Search<Tn1,T1>::value, std::true_type, ContainSame<T1, Tuple<Tn2...>>>{
+};
+
+template<typename T1,typename Tn1>
+struct ContainSame<T1,Tuple<Tn1>> :Search<Tn1,T1>{///从Tuple:T1中搜索是否包含类型Tn1
+};
+
+template<typename T1,typename ...T2>
+bool contain_same_v = ContainSame<T1,T2...>::value;
+
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a ('a',34,6.8,true);
+    Tuple<short,double> av(90,88.9);
+    Tuple<char> ab;
+    
+    bool xx0 = contain_same_v<decltype(a), decltype(av)>;///true
+    bool xx1 = contain_same_v<decltype(a), decltype(ab)>;///true
+    bool xx2 = contain_same_v<decltype(ab), decltype(av)>;///false
+    bool xx3 = contain_same_v<decltype(a), decltype(a)>;///true
+        
+     return 0;
+}
+```
+
+
+
 
 
 # Tuple对象的变换

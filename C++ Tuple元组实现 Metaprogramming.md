@@ -150,7 +150,48 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 4、萃取Tuple指定位置的类型
+## 4、寻找Tuple最大类型
+
+我们可以从Tuple中萃取占内存最大的那个类型，代码如下：
+
+```
+template <typename ...T>struct MaxType;
+
+template <typename H,typename ...T>
+struct MaxType<Tuple<H,T...>>{
+    using lastSize = typename MaxType<Tuple<T...>>::type;
+    using type = std::conditional_t<(sizeof(H)>=sizeof(lastSize)), H,lastSize>;
+};
+
+template <typename X,typename H>
+struct MaxType<Tuple<X,H>>{
+    using type = std::conditional_t<(sizeof(X)>=sizeof(H)),X,H>;
+};
+
+template <typename H>
+struct MaxType<Tuple<H>>{
+    using type = H;
+};
+
+template <typename ...T>
+using maxType_t = typename MaxType<T...>::type;
+
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a ('a',34,6.8,true);
+    Tuple<short,double> av(90,88.9);
+    Tuple<char> ab;
+    
+    maxType_t<decltype(a)> xx1;///double
+    maxType_t<decltype(av)> add;///double
+    maxType_t<decltype(ab)> ad4d;///char
+        
+    return 0;
+}
+```
+
+
+
+## 5、萃取Tuple指定位置的类型
 
 我们可以从Tuple中萃取指定位置的类型，例如第一个、最后一个、或者第n个...
 
@@ -330,7 +371,7 @@ int main(int argc, const char * argv[]) {
 
 经过上述代码改进后，Supscript依然可以萃取到任意指定位置的类型。
 
-## 5、移除Tuple的指定位置的类型
+## 6、移除Tuple的指定位置的类型
 
 借助上面PushFrontC这个方法可以轻松删掉Tuple指定位置的类型
 
@@ -363,7 +404,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 6、插入特定类型到Tuple的指定位置
+## 7、插入特定类型到Tuple的指定位置
 
 依葫芦画瓢，按照上面移除类型的指导思想，很容易写出插入某个类型到Tuple中指定位置的方法，参考代码如下：
 
@@ -405,7 +446,7 @@ int main(int argc, const char * argv[]) {
 
 
 
-## 7、翻转Tuple的类型列表
+## 8、翻转Tuple的类型列表
 
 借助上面PushBackC这个方法可以轻松实现Tuple类型反转。
 
@@ -441,7 +482,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 8、两个Tuple合并
+## 9、两个Tuple合并
 
 可以想办法把两个Tuple内部的类型合并成到一个Tuple中：
 
@@ -479,7 +520,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 9、判断两个Tuple的类型列表中是否有相同的类型
+## 10、判断两个Tuple的类型列表中是否有相同的类型
 
 利用上面的Search方法可以判断Tuple中是否包含特定类型，因而我们可以再进一步判断两个Tuple是否有相同的类型，有则返回true，否则返回false，代码参考如下：
 

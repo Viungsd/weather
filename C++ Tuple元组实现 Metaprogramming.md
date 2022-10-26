@@ -442,7 +442,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-上述getTuple利用了constexpr编译时特性，否则只能使用模板递归实现，参考如下代码，由于函数模板不支持偏特化，所以需要函数外面套上一层类TP，借助TP类的模板偏特化来实现：
+上述getTuple利用了constexpr编译时特性，C++17之前只能使用模板递归实现，参考如下代码，由于函数模板不支持偏特化，所以需要函数外面套上一层类TP，借助TP类的模板偏特化来实现递归结束：
 
 ```
 template<int idx,typename ...T>struct TP;

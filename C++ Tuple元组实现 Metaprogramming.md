@@ -353,8 +353,6 @@ using remove_at_t = typename RemoveAt<idx,T1,T2...>::type;
 
 int main(int argc, const char * argv[]) {
     Tuple<char,short,double,bool> a ('a',34,6.8,true);
-    Tuple<short,double> av(90,88.9);
-    Tuple<char> ab;
     
     remove_at_t<0, decltype(a)> xxx1; ///Tuple<short,double,bool> xxx1;
     remove_at_t<1, decltype(a)> xxx12;///Tuple<char,double,bool> xxx12;
@@ -365,11 +363,49 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+## 6、插入特定类型到Tuple的指定位置
+
+依葫芦画瓢，按照上面移除类型的指导思想，很容易写出插入某个类型到Tuple中指定位置的方法，参考代码如下：
+
+```
+
+template<typename X,int idx,typename ...T>struct InsertAt;
+
+template<typename X,int idx,typename H,typename ...T2>
+struct InsertAt<X,idx,Tuple<H,T2...>>{
+    using type = typename PushFrontC<H,typename InsertAt<X,idx-1,Tuple<T2...>>::type>::type;
+};
+
+template<typename X,typename H,typename ...T>
+struct InsertAt<X,0,Tuple<H,T...>>{
+    using type = Tuple<X,H,T...>;
+};
+
+template<typename X>
+struct InsertAt<X,0,Tuple<>>{
+    using type = Tuple<X>;
+};
+
+template<typename X,int idx,typename ...T>
+using insert_at_t = typename InsertAt<X,idx,T...>::type;
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a ('a',34,6.8,true);
+    
+    insert_at_t<bool,0, decltype(a)> xxx1;   ///Tuple<bool,char,short,double,bool> xxx1;
+    insert_at_t<void*,1, decltype(a)> xxx12; ///Tuple<char,void*,short,double,bool> xxx12;
+    insert_at_t<char*, 2,decltype(a)> xxx21; ///Tuple<char,short,char*,double,bool> xxx21;
+    insert_at_t<int*,3,decltype(a)> xx3x21; ///Tuple<char,short,double,int*,bool> xx3x21;
+    insert_at_t<long,4,decltype(a)> xx34x21;///Tuple<char,short,double,bool,long> xx34x21;
+        
+     return 0;
+}
+```
 
 
 
-
-## 6、翻转Tuple的类型列表
+## 7、翻转Tuple的类型列表
 
 借助上面PushBackC这个方法可以轻松实现Tuple类型反转。
 
@@ -405,7 +441,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 7、两个Tuple合并
+## 8、两个Tuple合并
 
 可以想办法把两个Tuple内部的类型合并成到一个Tuple中：
 
@@ -443,7 +479,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 8、判断两个Tuple的类型列表中是否有相同的类型
+## 9、判断两个Tuple的类型列表中是否有相同的类型
 
 利用上面的Search方法可以判断Tuple中是否包含特定类型，因而我们可以再进一步判断两个Tuple是否有相同的类型，有则返回true，否则返回false，代码参考如下：
 

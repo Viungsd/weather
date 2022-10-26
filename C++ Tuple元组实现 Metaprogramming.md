@@ -411,7 +411,7 @@ int main(int argc, const char * argv[]) {
 
 如果说刚才都是Tuple类型列表变换，那我们要讨论一下对象如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象？增加一个类型？删除一个类型？或者翻转类型？
 
-#### 问题1:如何获取Tuple对象指定位置的元素值？
+#### 问题1:如何获取、修改Tuple对象指定位置的元素值？
 
 ```
 template<int idx,typename ...T>
@@ -431,14 +431,39 @@ int main(int argc, const char * argv[]) {
     
     auto xxx0 =  getTuple<0>(a);///copy -> 'a'
     auto &xxx = getTuple<0>(a);///lvalue reference
-    xxx = '9';
-    getTuple<3>(a) = false;
+    xxx = '9';///modify
+    getTuple<3>(a) = false;///modify
     auto xxx1 =  getTuple<1>(a);///34
     auto xxx2 =  getTuple<2>(a);///6.8
     auto xxx3 =  getTuple<3>(a);///true
     auto xxx4 =  getTuple<0>(av);///90
     
      return 0;
+}
+```
+
+上述getTuple利用了constexpr编译时特性，否则只能使用模板递归实现，参考如下代码，由于函数模板不支持偏特化，所以需要函数外面套上一层类TP，借助TP类的模板偏特化来实现：
+
+```
+template<int idx,typename ...T>struct TP;
+
+template<int idx,typename H,typename ...T>
+struct TP<idx,Tuple<H,T...>>{
+    static auto& fun(Tuple<H,T...>& tp){
+        return TP<idx-1,Tuple<T...>>::fun(tp.tail);
+    }
+};
+
+template<typename H,typename ...T>
+struct TP<0,Tuple<H,T...>>{
+    static auto& fun(Tuple<H,T...>& tp){
+        return tp.head;
+    }
+};
+
+template<int idx,typename ...T>
+auto& getTuple(Tuple<T...>& tuple){
+    return TP<idx,Tuple<T...>>::fun(tuple);
 }
 ```
 

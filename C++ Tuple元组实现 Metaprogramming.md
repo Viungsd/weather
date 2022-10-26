@@ -335,8 +335,7 @@ int main(int argc, const char * argv[]) {
 借助上面PushBackC这个方法可以轻松实现Tuple类型反转。
 
 ```
-template <int idx, typename ...T>
-struct Reverse;
+template <int idx, typename ...T>struct Reverse;
 
 template <int idx,typename H, typename ...T>
 struct Reverse<idx,Tuple<H,T...>>{

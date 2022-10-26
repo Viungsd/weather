@@ -1,4 +1,4 @@
-# C++ Tuple元组实现 Metaprogramming
+# C++ Tuple 元组实现 Metaprogramming
 
 核心玩法：模板递归、偏特化
 
@@ -402,6 +402,51 @@ int main(int argc, const char * argv[]) {
     merge_t<decltype(av), decltype(ab)> x13;/// Tuple<short,double,char> x13;
     
      return 0;
+}
+```
+
+
+
+# Tuple对象的变换
+
+如果说刚才都是Tuple类型的变换，那我们要讨论一下对象如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象？
+
+#### 问题1:如何获取Tuple对象指定位置的元素值？
+
+```
+template<int idx,typename ...T>
+auto getTuple(const Tuple<T...>& tuple){
+    if constexpr (0 == idx) {///利用constexpr的编译时特性 C++17
+        return tuple.head;
+    }else{
+        return getTuple<idx-1>(tuple.tail);
+    }
+}
+
+///Test
+int main(int argc, const char * argv[]) {
+    Tuple<char,short,double,bool> a ('a',34,6.8,true);
+    Tuple<short,double> av(90,88.9);
+    Tuple<char> ab;
+    
+ 
+    auto xxx0 =  getTuple<0>(a);///'a'
+    auto xxx1 =  getTuple<1>(a);///34
+    auto xxx2 =  getTuple<2>(a);///6.8
+    auto xxx3 =  getTuple<3>(a);///true
+    auto xxx4 =  getTuple<0>(av);///90
+    
+     return 0;
+}
+```
+
+
+
+```
+template<typename Head,typename ...Trail>
+inline auto pushFront(const Head& h,const Tuple<Trail...> &trail){///把对象h放到Tuple的首部，生成一个新的Tuple
+    using T =  decltype(PushForntT(h, trail));
+    return T(h,trail);
 }
 ```
 

@@ -647,9 +647,6 @@ auto& searchFirst(Tuple<> &tp){
 
 int main(int argc, const char * argv[]) {
     Tuple<float,char,short,int,double,bool> a(8.5,'a',34,90,6.8,true);
-    Tuple<long double,bool,double,int> av;//(90,88.9);
-    Tuple<double,bool> ab;
-    
 
     auto& notFound = sh::searchFirst<int*>(a);///sh::not_found
     auto char11 = sh::searchFirst<char>(a);///'a'

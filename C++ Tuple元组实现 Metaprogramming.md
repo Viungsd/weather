@@ -728,7 +728,7 @@ int main(int argc, const char * argv[]) {
 ```
 template<typename Pattern,typename ...T>
 auto& searchLast(Tuple<T...> &tp){
-    using reverseType = reverse_t<sizeof...(T)-1, Tuple<T...>>;///类型反转
+    using reverseType = reverse_t<sizeof...(T)-1, Tuple<T...>>;///类型翻转
     constexpr int idx =  SearchH<Pattern, reverseType>::value;///搜索类型Pattern所在位置
     if constexpr (0 == idx) {
         return not_found_v;
@@ -749,7 +749,46 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+由此可见，上述方法【searchLast】的实现，同时利用了多个已经实现的类型萃取技术。有没有办法独立实现呢？也就是不利用其他已经实现的萃取方法【通过递归实现】。我想肯定也是可以的，参考代码如下：
 
+```
+template<typename Pattern,typename H,typename ...T>
+auto& searchLast(Tuple<H,T...> &tp){
+    constexpr int size = sizeof...(T);
+    
+    if constexpr (0 == size) {
+        if constexpr (std::is_same_v<Pattern, H>) {
+            return tp.head;
+        }else{
+            return not_found_v;;
+        }
+    }else{
+        auto &last = searchLast<Pattern,T...>(tp.tail);
+        
+        if constexpr (std::is_same_v<Pattern, H>) {
+            if constexpr (std::is_same_v<not_found, std::remove_reference_t<decltype(last)>>) {
+                return tp.head;
+            }else{
+                return last;
+            }
+        }else {
+            return last;
+        }
+    }
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<bool,float,char,short,int,float,bool> a(true,8.5,'a',34,90,6.8,false);
+
+    auto&f1 = searchLast<float>(a);///6.8
+    auto &b0 = searchLast<bool>(a);///false
+    auto &int0 = searchLast<int>(a);///90
+            
+     return 0;
+}
+
+```
 
 
 

@@ -617,56 +617,7 @@ int main(int argc, const char * argv[]) {
 
 如果说刚才都是Tuple类型的变换，那我们接下来要讨论一下Tuple对象该如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象Tuple<char,bool>？增加一个类型？删除一个类型？或者翻转类型？
 
-## 1、类型搜索
-
-从Tuple对象中搜索某个类型，返回该对象中第一个类型为指定类型的元素引用。没有则返回not_found.
-
-```
-namespace sh{
-
-struct not_found{}not_found_v;
-
-template<typename Pattern,typename H,typename ...T>
-auto& searchFirst(Tuple<H,T...> &tp){
-    cout<<":" <<sizeof...(T) << endl;
-    if constexpr (std::is_same_v<Pattern, H>) {
-        return tp.head;
-    }else if constexpr (sizeof...(T) > 0){
-        return searchFirst<Pattern,T...>(tp.tail);
-    }else{
-        return not_found_v;
-    }
-}
-
-template<typename Pattern>
-auto& searchFirst(Tuple<> &tp){
-    return not_found_v;
-}
-
-};
-
-int main(int argc, const char * argv[]) {
-    Tuple<float,char,short,int,double,bool> a(8.5,'a',34,90,6.8,true);
-
-    auto& notFound = sh::searchFirst<int*>(a);///sh::not_found
-    auto char11 = sh::searchFirst<char>(a);///'a'
-    auto& short1 = sh::searchFirst<short>(a);///34
-    auto& bool1 = sh::searchFirst<bool>(a);///true
-    auto float1 = sh::searchFirst<float>(a);///8.5
-    auto int1 = sh::searchFirst<int>(a);///90
-    auto& double1 = sh::searchFirst<double>(a);///6.8
-
-    bool1 = false;
-    short1 = 67;///modify
-    double1 = 9.5;///modiy
-        
-     return 0;
-}
-```
-
-
-
-#### 问题1:如何获取、修改Tuple对象指定位置的元素值？
+#### 首先先考虑一个基本问题:如何获取、修改Tuple对象指定位置的元素值？
 
 ```
 template<int idx,typename ...T>
@@ -721,6 +672,86 @@ auto& getTuple(Tuple<T...>& tuple){
     return TP<idx,Tuple<T...>>::fun(tuple);
 }
 ```
+
+
+
+## 1、类型搜索
+
+##### 1、从头开始找第一个
+
+从Tuple对象中搜索某个类型，返回该对象中第一个类型为指定类型的元素引用。没有则返回not_found.
+
+```
+struct not_found{}not_found_v;
+
+template<typename Pattern,typename H,typename ...T>
+auto& searchFirst(Tuple<H,T...> &tp){
+    cout<<":" <<sizeof...(T) << endl;
+    if constexpr (std::is_same_v<Pattern, H>) {
+        return tp.head;
+    }else if constexpr (sizeof...(T) > 0){
+        return searchFirst<Pattern,T...>(tp.tail);
+    }else{
+        return not_found_v;
+    }
+}
+
+template<typename Pattern>
+auto& searchFirst(Tuple<> &tp){
+    return not_found_v;
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<float,char,short,int,double,bool> a(8.5,'a',34,90,6.8,true);
+
+    auto& notFound = searchFirst<int*>(a);///sh::not_found
+    auto char11 = searchFirst<char>(a);///'a'
+    auto& short1 = searchFirst<short>(a);///34
+    auto& bool1 = searchFirst<bool>(a);///true
+    auto float1 = searchFirst<float>(a);///8.5
+    auto int1 = searchFirst<int>(a);///90
+    auto& double1 = searchFirst<double>(a);///6.8
+
+    bool1 = false;
+    short1 = 67;///modify
+    double1 = 9.5;///modiy
+        
+     return 0;
+}
+```
+
+##### 2、从尾开始找第一个
+
+上面代码是从头开始遍历，找第一个，那如果反过来，找最后一个类型相同的元素呢？也就是从尾部开始遍历找第一个。如果利用上面的代码，我们可以先把Tuple的类型翻转一下【reverse_t】，然后在里面搜索第一个类型匹配的元素所在位置【SearchH】，这样我们用Tuple类型的总长度减去匹配的位置就是在原类型中最后一个匹配的位置，最后再利用萃取Tuple指定位置的方法【getTuple】即可。
+
+```
+template<typename Pattern,typename ...T>
+auto& searchLast(Tuple<T...> &tp){
+    using reverseType = reverse_t<sizeof...(T)-1, Tuple<T...>>;///类型反转
+    constexpr int idx =  SearchH<Pattern, reverseType>::value;///搜索类型Pattern所在位置
+    if constexpr (0 == idx) {
+        return not_found_v;
+    }else{
+        return getTuple<sizeof...(T)-idx>(tp);
+    }
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<bool,float,char,short,int,float,bool> a(true,8.5,'a',34,90,6.8,false);
+
+    auto&f1 = searchLast<float>(a);///6.8
+    auto &b0 = searchLast<bool>(a);///false
+    auto &int0 = searchLast<int>(a);///90
+        
+     return 0;
+}
+```
+
+
+
+
 
 
 

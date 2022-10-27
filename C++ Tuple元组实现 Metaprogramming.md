@@ -552,6 +552,65 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+## 11、Tuple的类型列表排序（按照所占字节大小）
+
+我们可以试着对Tuple中的类型列表按照一定规则进行排序，例如按照内存大小升序，参考代码如下：
+
+Note：下面代码采用插入排序的基本思想
+
+```
+template<typename A,typename B>
+struct Compare:std::integral_constant<bool, (sizeof(A) > sizeof(B))>{///比较类型A、B的大小
+};
+
+template<typename X,typename ...T>struct InsertFirst;
+
+template<typename X,typename H,typename ...T>
+struct InsertFirst<X,Tuple<H,T...>>{
+    using type = std::conditional_t<Compare<X,H>::value,typename PushFrontC<H,typename InsertFirst<X,Tuple<T...>>::type>::type,Tuple<X,H,T...>>;
+};
+
+template<typename X,typename T>
+struct InsertFirst<X,Tuple<T>>{
+    using type = std::conditional_t<Compare<X, T>::value,Tuple<T,X>,Tuple<X,T>>;
+};
+
+template<typename X>
+struct InsertFirst<X,Tuple<>>{
+    using type =  Tuple<X>;
+};
+
+template<typename ...T>struct SortInsert;///插入排序
+
+template<typename H,typename ...T>
+struct SortInsert<Tuple<H,T...>>{
+    using type = typename InsertFirst<H,typename SortInsert<Tuple<T...>>::type>::type;///将H插入到Tuple<T...>中第一个大于H的类型前面
+};
+
+template<typename H>
+struct SortInsert<Tuple<H>>{
+    using type = Tuple<H>;
+};
+
+template<>
+struct SortInsert<Tuple<>>{
+    using type = Tuple<>;
+};
+
+///按照字节大小升序排列，如果需要修改成降序，只需把Compare改成“<”即可
+int main(int argc, const char * argv[]) {
+    Tuple<long double,long long,float,char,short,int,bool,double,bool> a;// ('a',34,6.8,true);
+    Tuple<long double,bool,double,int> av;//(90,88.9);
+    Tuple<double,bool> ab;
+    
+    SortInsert<decltype(a)>::type x59a; //Tuple<char,bool,bool,short,float,int,long long,double,long double>
+    SortInsert<decltype(av)>::type x49a; ///Tuple<bool,int,double,long double>
+    SortInsert<decltype(ab)>::type xx9a;///Tuple<bool,double>
+            
+     return 0;
+}
+```
+
 
 
 # Tuple对象的变换

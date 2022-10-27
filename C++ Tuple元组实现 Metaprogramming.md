@@ -617,6 +617,58 @@ int main(int argc, const char * argv[]) {
 
 如果说刚才都是Tuple类型的变换，那我们接下来要讨论一下Tuple对象该如何变换？也就是形如一个Tuple<char>对象，如何变换到其他类型的对象Tuple<char,bool>？增加一个类型？删除一个类型？或者翻转类型？
 
+## 1、类型搜索
+
+从Tuple对象中搜索某个类型，返回该对象中第一个类型为指定类型的元素引用。没有则返回not_found.
+
+```
+namespace sh{
+
+struct not_found{}not_found_v;
+
+template<typename Pattern,typename H,typename ...T>
+auto& searchFirst(Tuple<H,T...> &tp){
+    cout<<":" <<sizeof...(T) << endl;
+    if constexpr (std::is_same_v<Pattern, H>) {
+        return tp.head;
+    }else if constexpr (sizeof...(T) > 0){
+        return searchFirst<Pattern,T...>(tp.tail);
+    }else{
+        return not_found_v;
+    }
+}
+
+template<typename Pattern>
+auto& searchFirst(Tuple<> &tp){
+    return not_found_v;
+}
+
+};
+
+int main(int argc, const char * argv[]) {
+    Tuple<float,char,short,int,double,bool> a(8.5,'a',34,90,6.8,true);
+    Tuple<long double,bool,double,int> av;//(90,88.9);
+    Tuple<double,bool> ab;
+    
+
+    auto& notFound = sh::searchFirst<int*>(a);///sh::not_found
+    auto char11 = sh::searchFirst<char>(a);///'a'
+    auto& short1 = sh::searchFirst<short>(a);///34
+    auto& bool1 = sh::searchFirst<bool>(a);///true
+    auto float1 = sh::searchFirst<float>(a);///8.5
+    auto int1 = sh::searchFirst<int>(a);///90
+    auto& double1 = sh::searchFirst<double>(a);///6.8
+
+    bool1 = false;
+    short1 = 67;///modify
+    double1 = 9.5;///modiy
+        
+     return 0;
+}
+```
+
+
+
 #### 问题1:如何获取、修改Tuple对象指定位置的元素值？
 
 ```

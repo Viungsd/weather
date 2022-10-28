@@ -994,6 +994,8 @@ int main(int argc, const char * argv[]) {
 
 我们可以想办法让两个Tuple合并成一个Tuple，代码参考如下：
 
+mergeTuple采用了模板禁用原理，如果第一个类型X不是Tuple类型，禁用该模板！
+
 ```
 template<typename ...T>
 struct isTuple:std::false_type{

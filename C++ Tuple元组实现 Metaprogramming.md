@@ -904,8 +904,6 @@ auto removeAt(Tuple<T...>&tup){
 
 int main(int argc, const char * argv[]) {
     Tuple<bool,float,char,short,int,float,bool> a(true,8.5,'a',34,90,6.8,false);
-    Tuple<long double,bool,double,int> av(88.9,false,5.6,9);
-    Tuple<double,bool> ab(4.5,true);
 
     auto&&aa01 = removeAt<0>(a);/// (     8.5,'a',34,90,6.8,false);
     auto&&aa02 = removeAt<1>(a);/// (true,    'a',34,90,6.8,false);

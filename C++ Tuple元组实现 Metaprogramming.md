@@ -918,3 +918,38 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+## 4、Tuple类型翻转
+
+借助上面pushBack这个方法可以轻松实现Tuple的类型反转，参考代码如下：
+
+```
+template<typename ...T>
+auto reverseTuple(const Tuple<T...>&tup){
+    constexpr int size = sizeof...(T);
+    if constexpr (size <= 1) {
+        return tup;
+    }else {
+        auto && last = reverseTuple(tup.tail);
+        return pushBack(tup.head, last);
+    }
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<bool,float,char,short,int,float,bool> a(true,8.5,'a',34,90,6.8,false);
+    Tuple<long double,bool,double,int> av(88.9,false,5.6,9);
+    Tuple<double,bool> ab(4.5,true);
+    Tuple<double> a4b(4.5);
+    Tuple<> a94b;
+    
+    auto&& r00 = reverseTuple(a); ///(false,6.8,90,34,'a',8.5,true);
+    auto&& r01 = reverseTuple(av);///(9, 5.6, false , 88.9);
+    auto&& r02 = reverseTuple(ab); ///(true , 4.5)
+    auto&& r03 = reverseTuple(a4b);/// (4.5);
+    auto&& r04 = reverseTuple(a94b);///Tuple<>
+    auto&& r05 = reverseTuple(r00);///(true,8.5,'a',34,90,6.8,false);
+                      
+     return 0;
+}
+```
+

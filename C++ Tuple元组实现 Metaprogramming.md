@@ -876,3 +876,4 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+分析：以上代码中popBack、pushBack的递归调用中都借助了pushFront这个方法，有办法不借助其他方法而独立实现吗？思考一下！

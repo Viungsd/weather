@@ -10,6 +10,7 @@
         Tuple<Tn...>tail;
         constexpr static int size = sizeof...(Tn)+1;
         Tuple():head(0){
+           
         }
         
         Tuple(const T0 &h,const Tuple<Tn...> &t):head(h),tail(t){
@@ -20,6 +21,7 @@
        
         template<typename _T0,typename ... _Tn,typename =std::enable_if_t<sizeof...(Tn)==sizeof...(_Tn)>>
         Tuple( _T0&& a, _Tn && ...  n):head(std::forward<_T0>(a)),tail(std::forward<_Tn>(n)...){
+            cout<<"=="<<sizeof...(Tn)+1 <<endl;
         }
     };
     
@@ -30,9 +32,13 @@
         
         Tuple():head(0){
         }
-        template<typename _T>
-        Tuple( _T&& a):head(a){
+        
+        Tuple(const T &h):head(h){
         }
+        
+        Tuple(const Tuple<T> & a):head(a.head){
+        }
+        
     };
     
     template<>
@@ -872,6 +878,44 @@ int main(int argc, const char * argv[]) {
     auto&&ab62 = pushBack('x', ab22);///(10,false,'x')
     auto&&a7ba = pushBack(true, av);///(88.9,false,5.6,9,true);
               
+     return 0;
+}
+```
+
+## 3、移除Tuple的指定位置的元素
+
+借助上面pushFront这个方法可以轻松删掉Tuple指定位置的元素，写了这么多，突然发现一切都很顺其自然，一气呵成！
+
+```
+template<unsigned int idx,typename ...T>
+auto removeAt(Tuple<T...>&tup){
+    constexpr int size = sizeof...(T);
+    static_assert(idx < size, "idx should less than the total number of type inside Tuple");
+    if constexpr (size == 1) {
+        return Tuple<>();
+    }else  if constexpr (idx == 0) {
+        return tup.tail;
+    }else{
+        auto && last = removeAt<idx-1>(tup.tail);
+        return pushFront(tup.head, last);
+    }
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<bool,float,char,short,int,float,bool> a(true,8.5,'a',34,90,6.8,false);
+    Tuple<long double,bool,double,int> av(88.9,false,5.6,9);
+    Tuple<double,bool> ab(4.5,true);
+
+    auto&&aa01 = removeAt<0>(a);/// (     8.5,'a',34,90,6.8,false);
+    auto&&aa02 = removeAt<1>(a);/// (true,    'a',34,90,6.8,false);
+    auto&&aa03 = removeAt<2>(a);/// (true,8.5,   ,34,90,6.8,false);
+    auto&&aa04 = removeAt<3>(a);/// (true,8.5,'a',   90,6.8,false);
+    auto&&aa05 = removeAt<4>(a);/// (true,8.5,'a',34,   6.8,false);
+    auto&&aa06 = removeAt<5>(a);/// (true,8.5,'a',34,90    ,false);
+    auto&&aa07 = removeAt<6>(a);/// (true,8.5,'a',34,90,6.8      );
+  //  auto&&aa08 = removeAt<7>(a);///Error
+                  
      return 0;
 }
 ```

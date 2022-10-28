@@ -34,6 +34,13 @@
         Tuple( _T&& a):head(a){
         }
     };
+    
+    template<>
+    struct Tuple<>{
+        constexpr static int size = 0;
+        Tuple(){
+        }
+    };
 
 ## 1、类型搜索
 
@@ -790,15 +797,83 @@ int main(int argc, const char * argv[]) {
 
 ```
 
+## 2、Tuple首尾中增加、移除类型
 
-
-
+如下代码展示了如何在Tuple的首尾、增加类型、删除类型，并且提供了测试案例：
 
 ```
 template<typename Head,typename ...Trail>
 inline auto pushFront(const Head& h,const Tuple<Trail...> &trail){///把对象h放到Tuple的首部，生成一个新的Tuple
     using T =  decltype(PushForntT(h, trail));
-    return T(h,trail);
+    if constexpr (sizeof...(Trail) > 0) {
+        return T(h,trail);
+    }else{
+        return Tuple<Head>(h);
+    }
+}
+
+
+template<typename ...T>
+inline auto popFront(const Tuple<T...> &tup){///移除Tuple的第一个元素，并返回新的Tuple
+    constexpr int size = sizeof...(T);
+    if constexpr (size == 0 || size == 1) {
+        return Tuple<>();
+    }else{
+        return tup.tail;
+    }
+}
+
+template<typename ...T>
+inline auto popBack(const Tuple<T...>&tup){///移除Tuple的最后一个元素，并返回新的Tuple
+    constexpr int size = sizeof...(T);
+    if constexpr (size == 0 || size == 1) {
+        return Tuple<>();
+    }else{
+        return pushFront(tup.head,popBack(tup.tail));
+    }
+}
+
+
+template<typename Head,typename ...Trail>
+inline auto pushBack(const Head& h,const Tuple<Trail...> &trail){///把对象h放到Tuple的尾部，生成一个新的Tuple
+    if constexpr (sizeof...(Trail) == 0) {
+        return Tuple<Head>(h);
+    }else  if constexpr (sizeof...(Trail) == 1) {
+        return Tuple<decltype(trail.head),Head>(trail.head,h);
+    }else{
+        return pushFront(trail.head,pushBack(h,trail.tail));
+    }
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<bool,float,char,short,int,float,bool> a(true,8.5,'a',34,90,6.8,false);
+    Tuple<long double,bool,double,int> av(88.9,false,5.6,9);
+    Tuple<double,bool> ab(4.5,true);
+
+    auto&&cd10 = popFront(a);///(8.5,'a',34,90,6.8,false);
+    auto&&cd00 = popFront(av);///(false,5.6,9);
+    auto&&cd40 = popFront(ab);///(true);
+    auto&&cd30 = popFront(cd40);///()
+    auto&&cd80 = popFront(cd30);///()
+   
+    auto&& a00 = popBack(a); ///(true,8.5,'a',34,90,6.8);
+    auto&&ab00 = popBack(ab); ///(4.5);
+    auto&&ab01 = popBack(ab00);///()
+    auto&&ab02 = popBack(ab01);///()
+    
+    auto&&a000 = pushFront('b', a);///('b',true,8.5,'a',34,90,6.8,false);
+    auto&&av000 = pushFront(false, av);///(false,88.9,false,5.6,9);
+    auto&&ab000 = pushFront(90, ab00);///(90,4.5)
+    auto&&a5000 = pushFront(80, ab02);///(80)
+    
+    
+    auto&&ab88 = pushBack(10, ab01);///(10)
+    auto&&ab22 = pushBack(false, ab88);///(10,false)
+    auto&&ab62 = pushBack('x', ab22);///(10,false,'x')
+    auto&&a7ba = pushBack(true, av);///(88.9,false,5.6,9,true);
+              
+     return 0;
 }
 ```
 

@@ -990,3 +990,46 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
+## 6、两个Tuple合并
+
+我们可以想办法让两个Tuple合并成一个Tuple，代码参考如下：
+
+```
+template<typename ...T>
+struct isTuple:std::false_type{
+};
+
+template<typename ...T>
+struct isTuple<Tuple<T...>> : std::true_type{
+};
+
+template<typename X, typename ...T,typename = std::enable_if_t<isTuple<X>::value>>
+auto mergeTuple(const X& a, const Tuple<T...>&tup){
+    constexpr int size = sizeof...(T);
+    if constexpr(size == 0) {
+        return a;
+    }else  if constexpr(size == 1) {
+        return pushBack(tup.head, a);
+    }else{
+        auto && tm = pushBack(tup.head, a);
+        return mergeTuple(tm, tup.tail);
+    }
+}
+
+int main(int argc, const char * argv[]) {
+    Tuple<long double,bool,double,int> av(88.9,false,5.6,9);
+    Tuple<double,bool> ab(4.5,true);
+    Tuple<double> a4b(7.5);
+    Tuple<> a94b;
+   
+    auto&& tm000  = mergeTuple(av, ab);
+    auto&& tm001  = mergeTuple(av, a4b);
+    auto&& tm002  = mergeTuple(ab, ab);
+    auto&& tm003  = mergeTuple(ab, a94b);
+    auto&& tm004  = mergeTuple(a94b, ab);
+    auto&& tm005  = mergeTuple(a4b, ab);
+                          
+     return 0;
+}
+```
+

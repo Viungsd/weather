@@ -918,7 +918,44 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-## 4、Tuple类型翻转
+## 4、把元素插入到Tuple的指定位置
+
+所谓“一招鲜吃遍天”，思维模式都是一样一样的，写起来几乎没有啥障碍，代码参考如下：
+
+```
+template<unsigned int idx,typename X, typename ...T>
+auto insertToTuple(const X& a, const Tuple<T...>&tup){
+    constexpr int size = sizeof...(T);
+    static_assert(idx <= size, "idx should less or equal than the total number of type inside Tuple");
+    if constexpr (size == 0) {
+        return Tuple<X>(a);
+    }else if constexpr(idx == 0){
+        return Tuple<X,T...>(a,tup);
+    }else if constexpr(size == 1){///size == 1 && idx == 1
+        return Tuple<decltype(tup.head),X>(tup.head,a);
+    }else{///size > 1
+        return pushFront(tup.head, insertToTuple<idx-1>(a, tup.tail));
+    }
+}
+
+
+int main(int argc, const char * argv[]) {
+    Tuple<long double,bool,double,int> av(88.9,false,5.6,9);
+   
+    auto r00 = insertToTuple<0>(999, av);   ///(999,88.9,false,5.6,9);
+    auto r01 = insertToTuple<1>('U', av);   ///(88.9,'U',false,5.6,9);
+    auto r02 = insertToTuple<2>(7, av);     ///(88.9,false,7,5.6,9);
+    auto r03 = insertToTuple<3>(true, av);  ///(88.9,false,5.6,true,9);
+    auto r04 = insertToTuple<4>(57, av);    ///(88.9,false,5.6,9,57);
+   // auto r05 = insertToTuple<5>(78.66, av); Error
+                     
+     return 0;
+}
+```
+
+
+
+## 5、Tuple类型翻转
 
 借助上面pushBack这个方法可以轻松实现Tuple的类型反转，参考代码如下：
 

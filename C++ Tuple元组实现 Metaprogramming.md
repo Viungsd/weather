@@ -867,7 +867,6 @@ int main(int argc, const char * argv[]) {
     auto&&ab000 = pushFront(90, ab00);///(90,4.5)
     auto&&a5000 = pushFront(80, ab02);///(80)
     
-    
     auto&&ab88 = pushBack(10, ab01);///(10)
     auto&&ab22 = pushBack(false, ab88);///(10,false)
     auto&&ab62 = pushBack('x', ab22);///(10,false,'x')
